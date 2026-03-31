@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buddy Evolution Showcase</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 40px 48px;
+    max-width: 1100px;
+    width: 100%;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.4);
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .header h1 .accent { color: #f78166; }
+  .header h1 .accent2 { color: #7ee787; }
+
+  .header .subtitle {
+    font-size: 13px;
+    color: #8b949e;
+    font-weight: 400;
+  }
+
+  .tiers {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .tier {
+    flex: 1;
+    max-width: 190px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .tier.hatchling { border-color: #484f58; }
+  .tier.juvenile { border-color: #3fb950; }
+  .tier.adult { border-color: #58a6ff; }
+  .tier.elder { border-color: #bc8cff; }
+  .tier.ascended { border-color: #f0883e; }
+
+  .tier-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .hatchling .tier-label { color: #8b949e; background: #21262d; }
+  .juvenile .tier-label { color: #3fb950; background: #0d2818; }
+  .adult .tier-label { color: #58a6ff; background: #0c2d6b; }
+  .elder .tier-label { color: #bc8cff; background: #271052; }
+  .ascended .tier-label { color: #f0883e; background: #3d1d00; }
+
+  .sprite-box {
+    font-size: 13px;
+    line-height: 1.35;
+    white-space: pre;
+    margin: 12px 0;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hatchling .sprite-box { color: #8b949e; }
+  .juvenile .sprite-box { color: #56d364; }
+  .adult .sprite-box { color: #79c0ff; }
+  .elder .sprite-box { color: #d2a8ff; }
+  .ascended .sprite-box { color: #ffa657; }
+
+  .xp-threshold {
+    font-size: 11px;
+    color: #8b949e;
+    margin-top: 8px;
+  }
+
+  .xp-threshold span {
+    font-weight: 600;
+  }
+
+  .hatchling .xp-threshold span { color: #8b949e; }
+  .juvenile .xp-threshold span { color: #3fb950; }
+  .adult .xp-threshold span { color: #58a6ff; }
+  .elder .xp-threshold span { color: #bc8cff; }
+  .ascended .xp-threshold span { color: #f0883e; }
+
+  .effect-tag {
+    font-size: 10px;
+    color: #6e7681;
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .arrow {
+    display: flex;
+    align-items: center;
+    color: #30363d;
+    font-size: 20px;
+    padding: 0 2px;
+    margin-top: 20px;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-name {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8b949e;
+    margin-bottom: 4px;
+  }
+
+  .stat-driver {
+    font-size: 10px;
+    color: #6e7681;
+  }
+
+  .stat-bar-track {
+    width: 100px;
+    height: 6px;
+    background: #21262d;
+    border-radius: 3px;
+    margin: 4px auto;
+    overflow: hidden;
+  }
+
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s;
+  }
+
+  .stat-bar-fill.debugging { background: #f97583; width: 78%; }
+  .stat-bar-fill.wisdom { background: #79c0ff; width: 62%; }
+  .stat-bar-fill.chaos { background: #f0883e; width: 35%; }
+  .stat-bar-fill.patience { background: #56d364; width: 85%; }
+  .stat-bar-fill.snark { background: #d2a8ff; width: 22%; }
+
+  .footer {
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid #21262d;
+  }
+
+  .footer .repo {
+    font-size: 12px;
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  .footer .tag {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 4px;
+  }
+
+  .xp-formula {
+    text-align: center;
+    font-size: 11px;
+    color: #6e7681;
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    background: #0d1117;
+    border: 1px dashed #30363d;
+    border-radius: 6px;
+  }
+
+  .xp-formula code {
+    color: #c9d1d9;
+    background: #161b22;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <h1><span class="accent">/buddy</span> evolution <span class="accent2">&#x2192;</span> token-driven RPG growth</h1>
+    <div class="subtitle">Your pet grows from actual Claude Code usage. 104 tests passing.</div>
+  </div>
+
+  <div class="tiers">
+    <div class="tier hatchling">
+      <div class="tier-label">Hatchling</div>
+      <div class="sprite-box">
+   /\_/\
+  ( ·   ·)
+  (  ω  )
+  (")_(")</div>
+      <div class="xp-threshold"><span>0</span> XP</div>
+      <div class="effect-tag">base form</div>
+    </div>
+
+    <div class="arrow">&#x25B6;</div>
+
+    <div class="tier juvenile">
+      <div class="tier-label">Juvenile</div>
+      <div class="sprite-box">
++  /\_/\  +
+  ( ·   ·)
++ (  ω  ) +
+  (")_(")</div>
+      <div class="xp-threshold"><span>100K</span> XP</div>
+      <div class="effect-tag">energy markers</div>
+    </div>
+
+    <div class="arrow">&#x25B6;</div>
+
+    <div class="tier adult">
+      <div class="tier-label">Adult</div>
+      <div class="sprite-box">
++../\_/\..+
+.( ·   ·).
++.(  ω  ).+
+..(")_(")..</div>
+      <div class="xp-threshold"><span>1M</span> XP</div>
+      <div class="effect-tag">species pattern</div>
+    </div>
+
+    <div class="arrow">&#x25B6;</div>
+
+    <div class="tier elder">
+      <div class="tier-label">Elder</div>
+      <div class="sprite-box">
+✧../\_/\..°
+·( ·   ·)✧
+°.(  ω  ).·
+✧.(")_(").°</div>
+      <div class="xp-threshold"><span>10M</span> XP</div>
+      <div class="effect-tag">glowing aura</div>
+    </div>
+
+    <div class="arrow">&#x25B6;</div>
+
+    <div class="tier ascended">
+      <div class="tier-label">Ascended</div>
+      <div class="sprite-box"> ★  ✦    ◇
+✧../\_/\..°
+·( ·   ·)✧
+°.(  ω  ).·
+✧.(")_(").°</div>
+      <div class="xp-threshold"><span>100M</span> XP</div>
+      <div class="effect-tag">star particles</div>
+    </div>
+  </div>
+
+  <div class="xp-formula">
+    XP = <code>output_tokens</code> + <code>input_tokens * 0.5</code> + <code>tool_calls * 100</code> + <code>quest_bonus</code> &times; <code>streak_multiplier</code>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-name">Debugging</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill debugging"></div></div>
+      <div class="stat-driver">file edits + tests</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-name">Wisdom</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill wisdom"></div></div>
+      <div class="stat-driver">input tokens</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-name">Chaos</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill chaos"></div></div>
+      <div class="stat-driver">rejected tool calls</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-name">Patience</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill patience"></div></div>
+      <div class="stat-driver">session duration</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-name">Snark</div>
+      <div class="stat-bar-track"><div class="stat-bar-fill snark"></div></div>
+      <div class="stat-driver">force-snips</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="repo">github.com/RaphaelRUzan/buddy-evolution</div>
+    <div class="tag">Proof of concept &middot; MIT &middot; 104 tests passing</div>
+  </div>
+</div>
+</body>
+</html>

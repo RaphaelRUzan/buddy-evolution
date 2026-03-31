@@ -1,10 +1,7 @@
 /**
- * Mirrored base sprite rendering system.
- * 18 species × 3 animation frames, 5 lines tall, 12 chars wide.
+ * Base sprite rendering system from the BUDDY companion pet.
+ * 18 species x 3 animation frames, 5 lines tall, 12 chars wide.
  * Line 0 reserved for hats, {E} placeholder for eyes.
- *
- * This is a simplified but faithful representation of the original sprite system.
- * Full ASCII art is condensed; the rendering pipeline is accurate.
  */
 
 import type { CompanionBones, Species, Eye, Hat } from './types.js'
@@ -12,127 +9,482 @@ import type { CompanionBones, Species, Eye, Hat } from './types.js'
 const SPRITE_WIDTH = 12
 const SPRITE_HEIGHT = 5
 
-// --- Sprite data: species → [frame0, frame1, frame2] ---
-// Each frame is 5 lines. Line 0 = hat zone (blank by default).
-// {E} = eye placeholder.
+// --- Sprite data: species -> [frame0, frame1, frame2] ---
 
 const SPRITE_DATA: Record<Species, string[][]> = {
   duck: [
-    ['            ', '   >(·__·)  ', '    (    )> ', '     ^^^^   ', '            '],
-    ['            ', '   >(·__·)  ', '   >(    )  ', '     ^^^^   ', '            '],
-    ['            ', '   >(·__·)~ ', '    (    )> ', '     ^^^^   ', '            '],
+    [
+      '            ',
+      '    __      ',
+      '  <({E} )___  ',
+      '   (  ._>   ',
+      '    `--´    ',
+    ],
+    [
+      '            ',
+      '    __      ',
+      '  <({E} )___  ',
+      '   (  ._>   ',
+      '    `--´~   ',
+    ],
+    [
+      '            ',
+      '    __      ',
+      '  <({E} )___  ',
+      '   (  .__>  ',
+      '    `--´    ',
+    ],
   ],
   goose: [
-    ['            ', '   >({E}__{E}) ', '   /(    )\\ ', '    |    |  ', '    ^^  ^^  '],
-    ['            ', '   >({E}__{E}) ', '    (    )/ ', '    |    |  ', '    ^^  ^^  '],
-    ['            ', '  ~>({E}__{E}) ', '   /(    )\\ ', '    |    |  ', '    ^^  ^^  '],
+    [
+      '            ',
+      '     ({E}>    ',
+      '     ||     ',
+      '   _(__)_   ',
+      '    ^^^^    ',
+    ],
+    [
+      '            ',
+      '    ({E}>     ',
+      '     ||     ',
+      '   _(__)_   ',
+      '    ^^^^    ',
+    ],
+    [
+      '            ',
+      '     ({E}>>   ',
+      '     ||     ',
+      '   _(__)_   ',
+      '    ^^^^    ',
+    ],
   ],
   blob: [
-    ['            ', '   .-----. ', '  ( {E}   {E} ) ', '  (  ___  ) ', '   \'-----\' '],
-    ['            ', '   .-----.  ', '  (  {E} {E}  ) ', '  (  ___  ) ', '   \'-----\' '],
-    ['            ', '   .-----. ', '  ( {E}   {E} ) ', '  (  o_o  ) ', '   \'-----\' '],
+    [
+      '            ',
+      '   .----.   ',
+      '  ( {E}  {E} )  ',
+      '  (      )  ',
+      '   `----´   ',
+    ],
+    [
+      '            ',
+      '  .------.  ',
+      ' (  {E}  {E}  ) ',
+      ' (        ) ',
+      '  `------´  ',
+    ],
+    [
+      '            ',
+      '    .--.    ',
+      '   ({E}  {E})   ',
+      '   (    )   ',
+      '    `--´    ',
+    ],
   ],
   cat: [
-    ['            ', '   /\\ /\\   ', '  ( {E} w {E} ) ', '   |    |  ', '    ~~~~   '],
-    ['            ', '   /\\ /\\   ', '  ( {E} w {E} ) ', '   | .. |  ', '    ~~~~   '],
-    ['            ', '   /\\ /\\   ', '  ( - w - ) ', '   |    |  ', '    ~~~~   '],
+    [
+      '            ',
+      '   /\\_/\\    ',
+      '  ( {E}   {E})  ',
+      '  (  ω  )   ',
+      '  (")_(")   ',
+    ],
+    [
+      '            ',
+      '   /\\_/\\    ',
+      '  ( {E}   {E})  ',
+      '  (  ω  )   ',
+      '  (")_(")~  ',
+    ],
+    [
+      '            ',
+      '   /\\-/\\    ',
+      '  ( {E}   {E})  ',
+      '  (  ω  )   ',
+      '  (")_(")   ',
+    ],
   ],
   dragon: [
-    ['            ', '  /\\\\ //\\  ', '  ( {E}  {E} )> ', '  <(    )  ', '    vv vv  '],
-    ['            ', '  /\\\\ //\\  ', '  ( {E}  {E} )  ', '  <(  ~ )> ', '    vv vv  '],
-    ['            ', '  /\\\\ //\\  ', '  ( {E}  {E} )> ', '  <( ~~ )  ', '    vv vv  '],
+    [
+      '            ',
+      '  /^\\  /^\\  ',
+      ' <  {E}  {E}  > ',
+      ' (   ~~   ) ',
+      '  `-vvvv-´  ',
+    ],
+    [
+      '            ',
+      '  /^\\  /^\\  ',
+      ' <  {E}  {E}  > ',
+      ' (        ) ',
+      '  `-vvvv-´  ',
+    ],
+    [
+      '   ~    ~   ',
+      '  /^\\  /^\\  ',
+      ' <  {E}  {E}  > ',
+      ' (   ~~   ) ',
+      '  `-vvvv-´  ',
+    ],
   ],
   octopus: [
-    ['            ', '   .---.   ', '  ( {E}  {E} )  ', '  /|/|\\|\\  ', '            '],
-    ['            ', '   .---.   ', '  ( {E}  {E} )  ', '  \\|\\|/|/  ', '            '],
-    ['            ', '   .---.   ', '  ( {E}  {E} )  ', '  /|\\|/|\\  ', '            '],
+    [
+      '            ',
+      '   .----.   ',
+      '  ( {E}  {E} )  ',
+      '  (______)  ',
+      '  /\\/\\/\\/\\  ',
+    ],
+    [
+      '            ',
+      '   .----.   ',
+      '  ( {E}  {E} )  ',
+      '  (______)  ',
+      '  \\/\\/\\/\\/  ',
+    ],
+    [
+      '     o      ',
+      '   .----.   ',
+      '  ( {E}  {E} )  ',
+      '  (______)  ',
+      '  /\\/\\/\\/\\  ',
+    ],
   ],
   owl: [
-    ['            ', '   {{{{{   ', '  ({ E}{ E}) ', '   (  v  ) ', '    ^^^^   '],
-    ['            ', '   {{{{{   ', '  ({E} {E} ) ', '   ( vv  ) ', '    ^^^^   '],
-    ['            ', '   {{{{{   ', '  (- _ - )  ', '   (  v  ) ', '    ^^^^   '],
+    [
+      '            ',
+      '   /\\  /\\   ',
+      '  (({E})({E}))  ',
+      '  (  ><  )  ',
+      '   `----´   ',
+    ],
+    [
+      '            ',
+      '   /\\  /\\   ',
+      '  (({E})({E}))  ',
+      '  (  ><  )  ',
+      '   .----.   ',
+    ],
+    [
+      '            ',
+      '   /\\  /\\   ',
+      '  (({E})(-))  ',
+      '  (  ><  )  ',
+      '   `----´   ',
+    ],
   ],
   penguin: [
-    ['            ', '   .---.   ', '  ({E}   {E})  ', '  /(   )\\  ', '   \" \"    '],
-    ['            ', '   .---.   ', '  ( {E} {E} )  ', '  /(   )\\  ', '    \" \"   '],
-    ['            ', '   .---.   ', '  ({E}   {E})  ', '  \\(   )/  ', '   \" \"    '],
+    [
+      '            ',
+      '  .---.     ',
+      '  ({E}>{E})     ',
+      ' /(   )\\    ',
+      '  `---´     ',
+    ],
+    [
+      '            ',
+      '  .---.     ',
+      '  ({E}>{E})     ',
+      ' |(   )|    ',
+      '  `---´     ',
+    ],
+    [
+      '  .---.     ',
+      '  ({E}>{E})     ',
+      ' /(   )\\    ',
+      '  `---´     ',
+      '   ~ ~      ',
+    ],
   ],
   turtle: [
-    ['            ', '    .===.  ', '   /{E}  {E}\\  ', '  |_===_|  ', '   ^^ ^^   '],
-    ['            ', '    .===.  ', '   / {E}{E} \\  ', '  |_===_|  ', '    ^^ ^^  '],
-    ['            ', '    .===.  ', '   /{E}  {E}\\  ', '  |_===_|  ', '   ^^ ^^   '],
+    [
+      '            ',
+      '   _,--._   ',
+      '  ( {E}  {E} )  ',
+      ' /[______]\\ ',
+      '  ``    ``  ',
+    ],
+    [
+      '            ',
+      '   _,--._   ',
+      '  ( {E}  {E} )  ',
+      ' /[______]\\ ',
+      '   ``  ``   ',
+    ],
+    [
+      '            ',
+      '   _,--._   ',
+      '  ( {E}  {E} )  ',
+      ' /[======]\\ ',
+      '  ``    ``  ',
+    ],
   ],
   snail: [
-    ['            ', '    @      ', '   ({E}  {E})___', '  /______/ ', '   ~~~~~~  '],
-    ['            ', '     @     ', '   ({E}  {E})___', '  /______/ ', '    ~~~~~~ '],
-    ['            ', '    @      ', '   ({E}  {E})___', '  /______/ ', '   ~~~~~~  '],
+    [
+      '            ',
+      ' {E}    .--.  ',
+      '  \\  ( @ )  ',
+      '   \\_`--´   ',
+      '  ~~~~~~~   ',
+    ],
+    [
+      '            ',
+      '  {E}   .--.  ',
+      '  |  ( @ )  ',
+      '   \\_`--´   ',
+      '  ~~~~~~~   ',
+    ],
+    [
+      '            ',
+      ' {E}    .--.  ',
+      '  \\  ( @  ) ',
+      '   \\_`--´   ',
+      '   ~~~~~~   ',
+    ],
   ],
   ghost: [
-    ['            ', '   .---.   ', '  ( {E}  {E} )  ', '  |     |  ', '  ~^~^~^~  '],
-    ['            ', '   .---.   ', '  (  {E}{E}  )  ', '  |     |  ', '  ^~^~^~^  '],
-    ['            ', '   .---.   ', '  ( -  - )  ', '  |  O  |  ', '  ~^~^~^~  '],
+    [
+      '            ',
+      '   .----.   ',
+      '  / {E}  {E} \\  ',
+      '  |      |  ',
+      '  ~`~``~`~  ',
+    ],
+    [
+      '            ',
+      '   .----.   ',
+      '  / {E}  {E} \\  ',
+      '  |      |  ',
+      '  `~`~~`~`  ',
+    ],
+    [
+      '    ~  ~    ',
+      '   .----.   ',
+      '  / {E}  {E} \\  ',
+      '  |      |  ',
+      '  ~~`~~`~~  ',
+    ],
   ],
   axolotl: [
-    ['            ', '  \\\\(  )// ', '   ({E}  {E})  ', '   (  ~ )  ', '    ~~~~   '],
-    ['            ', '  \\\\(  )// ', '   ({E}  {E})  ', '   ( ~  )  ', '     ~~~~  '],
-    ['            ', '  \\\\(  )// ', '   ({E}  {E})  ', '   ( ~~ )  ', '    ~~~~   '],
+    [
+      '            ',
+      '}~(______)~{',
+      '}~({E} .. {E})~{',
+      '  ( .--. )  ',
+      '  (_/  \\_)  ',
+    ],
+    [
+      '            ',
+      '~}(______){~',
+      '~}({E} .. {E}){~',
+      '  ( .--. )  ',
+      '  (_/  \\_)  ',
+    ],
+    [
+      '            ',
+      '}~(______)~{',
+      '}~({E} .. {E})~{',
+      '  (  --  )  ',
+      '  ~_/  \\_~  ',
+    ],
   ],
   capybara: [
-    ['            ', '   .---.   ', '  ({E}    {E})  ', '  ( ~~~~ ) ', '   || ||   '],
-    ['            ', '   .---.   ', '  ( {E}  {E} )  ', '  ( ~~~~ ) ', '    || ||  '],
-    ['            ', '   .---.   ', '  ({E}    {E})  ', '  (  ~~  ) ', '   || ||   '],
+    [
+      '            ',
+      '  n______n  ',
+      ' ( {E}    {E} ) ',
+      ' (   oo   ) ',
+      '  `------´  ',
+    ],
+    [
+      '            ',
+      '  n______n  ',
+      ' ( {E}    {E} ) ',
+      ' (   Oo   ) ',
+      '  `------´  ',
+    ],
+    [
+      '    ~  ~    ',
+      '  u______n  ',
+      ' ( {E}    {E} ) ',
+      ' (   oo   ) ',
+      '  `------´  ',
+    ],
   ],
   cactus: [
-    ['            ', '    |/|    ', '   ({E}  {E})  ', '   /|  |\\  ', '   ~~~~~   '],
-    ['            ', '    |\\|    ', '   ({E}  {E})  ', '   \\|  |/  ', '   ~~~~~   '],
-    ['            ', '    |/|    ', '   ({E}  {E})  ', '   /|  |\\  ', '   ~~~~~   '],
+    [
+      '            ',
+      ' n  ____  n ',
+      ' | |{E}  {E}| | ',
+      ' |_|    |_| ',
+      '   |    |   ',
+    ],
+    [
+      '            ',
+      '    ____    ',
+      ' n |{E}  {E}| n ',
+      ' |_|    |_| ',
+      '   |    |   ',
+    ],
+    [
+      ' n        n ',
+      ' |  ____  | ',
+      ' | |{E}  {E}| | ',
+      ' |_|    |_| ',
+      '   |    |   ',
+    ],
   ],
   robot: [
-    ['            ', '  [=====]  ', '  |{E}  {E}|  ', '  |[===]|  ', '  d|   |b  '],
-    ['            ', '  [=====]  ', '  |{E}  {E}|  ', '  |[=+=]|  ', '  d|   |b  '],
-    ['            ', '  [=====]  ', '  |- _ -|  ', '  |[===]|  ', '  d|   |b  '],
+    [
+      '            ',
+      '   .[||].   ',
+      '  [ {E}  {E} ]  ',
+      '  [ ==== ]  ',
+      '  `------´  ',
+    ],
+    [
+      '            ',
+      '   .[||].   ',
+      '  [ {E}  {E} ]  ',
+      '  [ -==- ]  ',
+      '  `------´  ',
+    ],
+    [
+      '     *      ',
+      '   .[||].   ',
+      '  [ {E}  {E} ]  ',
+      '  [ ==== ]  ',
+      '  `------´  ',
+    ],
   ],
   rabbit: [
-    ['   ()  ()  ', '   |/  \\|  ', '  ({E}    {E})  ', '  ( \"\" )  ', '   () ()   '],
-    ['   ()  ()  ', '   |\\  /|  ', '  ( {E}  {E} )  ', '  ( \"\" )  ', '    () ()  '],
-    ['    () ()  ', '    |/ \\|  ', '  ({E}    {E})  ', '  (  \"\" )  ', '   () ()   '],
+    [
+      '            ',
+      '   (\\__/)   ',
+      '  ( {E}  {E} )  ',
+      ' =(  ..  )= ',
+      '  (")__(")  ',
+    ],
+    [
+      '            ',
+      '   (|__/)   ',
+      '  ( {E}  {E} )  ',
+      ' =(  ..  )= ',
+      '  (")__(")  ',
+    ],
+    [
+      '            ',
+      '   (\\__/)   ',
+      '  ( {E}  {E} )  ',
+      ' =( .  . )= ',
+      '  (")__(")  ',
+    ],
   ],
   mushroom: [
-    ['            ', '  .oOOOo.  ', '  ({E}    {E})  ', '    |  |   ', '   ~~~~~   '],
-    ['            ', '  .oOOOo.  ', '  ( {E}  {E} )  ', '    |  |   ', '    ~~~~~  '],
-    ['            ', '  .oOOOo.  ', '  ({E}    {E})  ', '    |~~|   ', '   ~~~~~   '],
+    [
+      '            ',
+      ' .-o-OO-o-. ',
+      '(__________)',
+      '   |{E}  {E}|   ',
+      '   |____|   ',
+    ],
+    [
+      '            ',
+      ' .-O-oo-O-. ',
+      '(__________)',
+      '   |{E}  {E}|   ',
+      '   |____|   ',
+    ],
+    [
+      '   . o  .   ',
+      ' .-o-OO-o-. ',
+      '(__________)',
+      '   |{E}  {E}|   ',
+      '   |____|   ',
+    ],
   ],
   chonk: [
-    ['            ', '  .=====.  ', ' ({E}      {E}) ', ' (       ) ', '  ^^^ ^^^  '],
-    ['            ', '  .=====.  ', ' ( {E}    {E} ) ', ' (       ) ', '   ^^^ ^^^ '],
-    ['            ', '  .=====.  ', ' ({E}      {E}) ', ' (  ~~~  ) ', '  ^^^ ^^^  '],
+    [
+      '            ',
+      '  /\\    /\\  ',
+      ' ( {E}    {E} ) ',
+      ' (   ..   ) ',
+      '  `------´  ',
+    ],
+    [
+      '            ',
+      '  /\\    /|  ',
+      ' ( {E}    {E} ) ',
+      ' (   ..   ) ',
+      '  `------´  ',
+    ],
+    [
+      '            ',
+      '  /\\    /\\  ',
+      ' ( {E}    {E} ) ',
+      ' (   ..   ) ',
+      '  `------´~ ',
+    ],
   ],
 }
 
 // --- Hat rendering ---
 
-const HAT_SPRITES: Record<Exclude<Hat, 'none'>, string> = {
-  crown:     '    ♕      ',
-  tophat:    '   ▄██▄    ',
-  propeller: '    ⌐¬     ',
-  halo:      '    ◯      ',
-  wizard:    '   ▲       ',
-  beanie:    '   ≡≡≡     ',
-  tinyduck:  '    >.>    ',
+const HAT_LINES: Record<Hat, string> = {
+  none: '',
+  crown: '   \\^^^/    ',
+  tophat: '   [___]    ',
+  propeller: '    -+-     ',
+  halo: '   (   )    ',
+  wizard: '    /^\\     ',
+  beanie: '   (___)    ',
+  tinyduck: '    ,>      ',
 }
 
 // --- Face rendering (1-line compact) ---
 
-const FACE_PATTERNS: Partial<Record<Species, string>> = {
-  cat:     '({E}w{E})',
-  duck:    '>({E}__{E})',
-  blob:    '({E} _ {E})',
-  ghost:   '({E} o {E})',
-  dragon:  '({E}>{E})',
-  robot:   '[{E}={E}]',
+export function renderFace(bones: CompanionBones): string {
+  const eye: Eye = bones.eye
+  switch (bones.species) {
+    case 'duck':
+    case 'goose':
+      return `(${eye}>)`
+    case 'blob':
+      return `(${eye}${eye})`
+    case 'cat':
+      return `=${eye}ω${eye}=`
+    case 'dragon':
+      return `<${eye}~${eye}>`
+    case 'octopus':
+      return `~(${eye}${eye})~`
+    case 'owl':
+      return `(${eye})(${eye})`
+    case 'penguin':
+      return `(${eye}>)`
+    case 'turtle':
+      return `[${eye}_${eye}]`
+    case 'snail':
+      return `${eye}(@)`
+    case 'ghost':
+      return `/${eye}${eye}\\`
+    case 'axolotl':
+      return `}${eye}.${eye}{`
+    case 'capybara':
+      return `(${eye}oo${eye})`
+    case 'cactus':
+      return `|${eye}  ${eye}|`
+    case 'robot':
+      return `[${eye}${eye}]`
+    case 'rabbit':
+      return `(${eye}..${eye})`
+    case 'mushroom':
+      return `|${eye}  ${eye}|`
+    case 'chonk':
+      return `(${eye}.${eye})`
+    default:
+      return `(${eye} ${eye})`
+  }
 }
-
-const DEFAULT_FACE = '({E} {E})'
 
 // --- Rendering ---
 
@@ -140,25 +492,22 @@ export function spriteFrameCount(_species: Species): number {
   return 3
 }
 
-export function renderSprite(bones: CompanionBones, frameIndex: number): string[] {
-  const speciesData = SPRITE_DATA[bones.species]
-  if (!speciesData) return Array(SPRITE_HEIGHT).fill(' '.repeat(SPRITE_WIDTH))
+export function renderSprite(bones: CompanionBones, frameIndex = 0): string[] {
+  const frames = SPRITE_DATA[bones.species]
+  if (!frames) return Array(SPRITE_HEIGHT).fill(' '.repeat(SPRITE_WIDTH))
 
-  const frame = speciesData[frameIndex % speciesData.length]
-  const lines = frame.map(line => line.replace(/\{E\}/g, bones.eye))
+  const body = frames[frameIndex % frames.length].map(line =>
+    line.replaceAll('{E}', bones.eye),
+  )
+  const lines = [...body]
 
-  // Apply hat on line 0
-  if (bones.hat !== 'none' && HAT_SPRITES[bones.hat]) {
-    lines[0] = HAT_SPRITES[bones.hat]
+  // Only replace with hat if line 0 is empty
+  if (bones.hat !== 'none' && !lines[0].trim()) {
+    lines[0] = HAT_LINES[bones.hat]
   }
 
   // Pad all lines to consistent width
   return lines.map(l => l.padEnd(SPRITE_WIDTH))
-}
-
-export function renderFace(bones: CompanionBones): string {
-  const pattern = FACE_PATTERNS[bones.species] ?? DEFAULT_FACE
-  return pattern.replace(/\{E\}/g, bones.eye)
 }
 
 export { SPRITE_WIDTH, SPRITE_HEIGHT, SPRITE_DATA }
