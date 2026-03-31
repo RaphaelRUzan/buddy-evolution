@@ -1,0 +1,16 @@
+{
+  "name": "buddy-evolution",
+  "version": "0.1.0",
+  "description": "RPG-style evolution system for the BUDDY companion pet, driven by token throughput metrics",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  }
+}
